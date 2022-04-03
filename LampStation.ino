@@ -14,8 +14,8 @@ bool apWifiFlag = false;
 
 int maxCountTry = 20;
 
-Timer onlineTmr(18000, false);  // 18 секунд таймаут онлайна
-Timer hbTmr(8000);              // 8 секунд период отправки пакета
+Timer onlineTmr(ONLINE_TIMEOUT, false);  // таймаут онлайна
+Timer hbTmr(PACKET_SEND_DELAY); // период отправки пакета
 
 void setup(void) {
   pinMode(TOUCH_PIN, INPUT);
@@ -28,11 +28,11 @@ void setup(void) {
   EEPROM.begin(sizeof(data) + 1); // +1 на ключ
   memory_point.begin(0, 'd'); // запускаем менеджер памяти
 
-  //memory_point.reset();
-
   int countTry = 0;
 
-  if (data.ssid != NULL && data.password != NULL) {
+  //memory_point.reset();
+
+  if (data.ssid != NULL && data.password != NULL && data.ssid != "" && data.password != "") {
     WiFi.mode(WIFI_STA);
     WiFi.begin(data.ssid, data.password);
   
@@ -41,7 +41,7 @@ void setup(void) {
       delay(500);
       Serial.print(".");
       if (countTry >= maxCountTry) { 
-        Serial.println("");
+        Serial.println("Attempts limit reached");
         break; 
       }
     }
@@ -52,20 +52,20 @@ void setup(void) {
       Serial.print("IP address: ");
       Serial.println(WiFi.localIP());
     
-      mqtt.setServer(data.ip_mqtt_service, data.port_mqtt_service);
+      mqtt.setServer(data.mqtt_service_host, data.mqtt_service_port);
       mqtt.setCallback(callback);
     } else {
       Serial.println("Cant connect to wifi with data");
       apWifiFlag = true;
       WiFi.mode(WIFI_AP);
-      WiFi.softAP(("WebLamp_" + String(random(0xffffff), HEX)).c_str(), AP_PASSWORD);
+      WiFi.softAP(("WebLamp_" + String(WiFi.macAddress())).c_str(), AP_PASSWORD);
       Serial.println("Switch to AP mode");
     }
   } else {
     Serial.println("Dont exist wifi data");
     apWifiFlag = true;
     WiFi.mode(WIFI_AP);
-    WiFi.softAP(("WebLamp_" + String(random(0xffffff), HEX)).c_str(), AP_PASSWORD);
+    WiFi.softAP(("WebLamp_" + String(WiFi.macAddress())).c_str(), AP_PASSWORD);
     Serial.println("Switch to AP mode");
   }
 

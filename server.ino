@@ -22,13 +22,9 @@ void preData() {
                  String(data.password));
 
   updateData();
-
   Serial.println("Данные ssid и пароля записаны в память");
-  
   server.send(200, "text/plain", "savePreData");
-
-  //ESP.reset();
-  //ESP.restart();
+  ESP.restart();
 }
 
 void loadData() {
@@ -38,8 +34,16 @@ void loadData() {
           + " password:" + String(data.password)
           + " local-device-name:" + String(data.local_device_name)
           + " remote-device-name:" + String(data.remote_device_name)
-          + " ip-mqtt-service:" + String(data.ip_mqtt_service)
-          + " port-mqtt-service:" + String(data.port_mqtt_service);
+          + " mqtt-service-host:" + String(data.mqtt_service_host)
+          + " mqtt-service-port:" + String(data.mqtt_service_port)
+          + " mqtt-service-user:" + String(data.mqtt_service_user)
+          + " mqtt-service-pass:" + String(data.mqtt_service_pass)
+          + " light:" + String(color_pro.power)
+          + " color-red:" + String(color_pro.targetRed)
+          + " color-green:" + String(color_pro.targetGreen)
+          + " color-blue:" + String(color_pro.targetBlue)
+          + " pair-status:" + String(!onlineTmr.elapsed())
+          + " mqtt-status:" + String(mqtt.connected());
   }
 
   server.send(200, "text/plain", response);
@@ -49,8 +53,10 @@ void saveData() {
   bool mqtt_reconnect = false;
 
   if(strcmp(server.arg("local_device_name").c_str(), data.local_device_name) != 0 || 
-     strcmp(server.arg("ip_mqtt_service").c_str(), data.ip_mqtt_service) != 0 ||
-     server.arg("port_mqtt_service").toInt() != data.port_mqtt_service) {
+     strcmp(server.arg("mqtt_service_host").c_str(), data.mqtt_service_host) != 0 ||
+     strcmp(server.arg("mqtt_service_user").c_str(), data.mqtt_service_user) != 0 ||
+     strcmp(server.arg("mqtt_service_pass").c_str(), data.mqtt_service_pass) != 0 ||
+     server.arg("mqtt_service_port").toInt() != data.mqtt_service_port) {
      mqtt_reconnect = true;
   }
   
@@ -58,64 +64,50 @@ void saveData() {
   strncpy(data.password, server.arg("password").c_str(), sizeof(data.password));
   strncpy(data.local_device_name, server.arg("local_device_name").c_str(), sizeof(data.local_device_name));
   strncpy(data.remote_device_name, server.arg("remote_device_name").c_str(), sizeof(data.remote_device_name));
-  strncpy(data.ip_mqtt_service, server.arg("ip_mqtt_service").c_str(), sizeof(data.ip_mqtt_service));
-  data.port_mqtt_service = server.arg("port_mqtt_service").toInt();
+  strncpy(data.mqtt_service_host, server.arg("mqtt_service_host").c_str(), sizeof(data.mqtt_service_host));
+  data.mqtt_service_port = server.arg("mqtt_service_port").toInt();
+  strncpy(data.mqtt_service_user, server.arg("mqtt_service_user").c_str(), sizeof(data.mqtt_service_user));
+  strncpy(data.mqtt_service_pass, server.arg("mqtt_service_pass").c_str(), sizeof(data.mqtt_service_pass));
 
   updateData();
+  
+  color_pro.setColor(
+    server.arg("color_red").toInt(),
+    server.arg("color_green").toInt(),
+    server.arg("color_blue").toInt()
+  );
+  color_pro.checkoutPower(false, server.arg("light").toInt());
+  sendPacket(true);
 
   Serial.println("Список данных записан в память");
-  
   Serial.println(String(data.ssid) + " " + 
                  String(data.password) + " " + 
                  String(data.local_device_name) + " " + 
                  String(data.remote_device_name) + " " + 
-                 String(data.ip_mqtt_service) + " " + 
-                 data.port_mqtt_service);
+                 String(data.mqtt_service_host) + " " + 
+                 String(data.mqtt_service_user) + " " + 
+                 String(data.mqtt_service_pass) + " " + 
+                 data.mqtt_service_port);
 
   server.send(200, "text/plain", "saveData");
 
-  if(mqtt_reconnect) {
+  if (mqtt_reconnect) {
     Serial.println("Изменены данные MQTT, переподключаюсь");
     mqtt.disconnect();
-    mqtt.setServer(data.ip_mqtt_service, data.port_mqtt_service);
+    mqtt.setServer(data.mqtt_service_host, data.mqtt_service_port);
     connectMQTT();
   }
 }
 
-//void metricsPage() {
-//  if (!workFlagMetrics) {
-//    static const size_t BUFSIZE = 1024;
-//    static const char compile_date[] = __DATE__ " " __TIME__;
-//    static const char *response_template =
-//          "# HELP esp_module_reboot Device reboot count.\n"
-//          "# TYPE esp_module_reboot gauge\n"
-//          "# UNIT esp_module_reboot \n"
-//          "esp_module_reboot %d\n"
-//          "# HELP esp_module_uptime Device uptime in ms.\n"
-//          "# TYPE esp_module_uptime gauge\n"
-//          "# UNIT esp_module_uptime \n"
-//          "esp_module_uptime %d\n"
-//          "# HELP esp_module_info Device info.\n"
-//          "# TYPE esp_module_info gauge\n"
-//          "# UNIT esp_module_info \n"
-//          "esp_module_info{build=\"%s\",date=\"%s\"} 1\n";
-//    uint32_t count_reboot = 0;
-//    uint32_t ms = millis();
-//    char response[BUFSIZE];
-//    snprintf(response, BUFSIZE, response_template, count_reboot, ms, BUILD, compile_date);
-//    server.send(200, "text/plain; charset=utf-8", response);
-//
-//    workFlagMetrics = true;
-//    timer1_write(DELAY_SWITCH);
-//  } 
-//  else 
-//  {
-//    server.send(503, "text/plain; charset=utf-8", "custom response - reset request due to restriction");
-//  }
-//}
-
 void restartPage() {
-  server.send(200, "text/plain", "restart esp");
+  server.send(200, "text/plain", "Restart ESP");
+  ESP.restart();
+}
+
+void resetPage() {
+  server.send(200, "text/plain", "Reset ESP to defaults");
+  //resetAllData();
+  //Serial.println("EEPROM очищен");
   ESP.restart();
 }
 
@@ -132,6 +124,7 @@ void setupServer() {
   server.on("/loadData", loadData);
   server.on("/saveData", saveData);
   server.on("/restart", restartPage);
+  server.on("/reset", resetPage);
   server.onNotFound(fileNotFound);
   server.begin();
 }

@@ -19,7 +19,10 @@ const char LOGIN_page[] PROGMEM = R"=====(
             font-family: sans-serif;
         }
         .main-container {
-            margin: 10px;
+            left: 0;
+            right: 0;
+            margin: 10px auto;
+            width: 350px;
         }
         .icontainer {
             display: table;
@@ -36,15 +39,18 @@ const char LOGIN_page[] PROGMEM = R"=====(
         }
         .ibutton-yes {
             background-color: #67d06d;
-            width: 300px;
+            width: 350px;
             padding: 10px 10px;
             font-weight: bold;
             margin-bottom: 20px;
         }
+        .ibutton-yes:hover {
+            background-color: #9100ff;
+        }
         .ipanel {
             border-radius: 5px;
             background-color: #5f6576;
-            min-width: 300px;
+            min-width: 350px;
             display: table;
             padding: 5px 10px;
         }
@@ -119,8 +125,7 @@ const char LOGIN_page[] PROGMEM = R"=====(
                         } else { return; }
                     }
                 }
-                SendRequest(req, 'ssid=' + ssid + 
-                                '&password=' + password, '/preData');
+                SendRequest(req, 'ssid=' + ssid + '&password=' + password, '/preData');
             }
         }
     </script>
@@ -132,7 +137,7 @@ const char LOGIN_page[] PROGMEM = R"=====(
         
         <div class="ipanel separator-panel" id="restart" style="display: none; margin: 0 0 20px 0;">Restart device, please</div>
         
-        <div class="ipanel header-panel">WiFi</div>
+        <div class="ipanel header-panel">WiFi setup</div>
         <div class="ipanel body-panel">
             <div class="text-container"><input class="text-field" id="ssid" placeholder="SSID..." type="text"></div>
             <div class="text-container"><input class="text-field" id="password" placeholder="Password..." type="password"></div>
@@ -162,7 +167,10 @@ const char MAIN_page[] PROGMEM = R"=====(
             font-family: sans-serif;
         }
         .main-container {
-            margin: 10px;
+            left: 0;
+            right: 0;
+            margin: 20px auto;
+            width: 350px;
         }
         .icontainer {
             display: table;
@@ -188,17 +196,26 @@ const char MAIN_page[] PROGMEM = R"=====(
             margin: 5px 5px 5px 0px;
             font-weight: bold;
         }
+        .ibutton:hover {
+            background-color: #9100ff;
+        }
+        .danger {
+            background-color: #d06d67;
+        }
         .ibutton-yes {
             background-color: #67d06d;
-            width: 300px;
+            width: 350px;
             padding: 10px 10px;
             font-weight: bold;
             margin-bottom: 20px;
         }
+        .ibutton-yes:hover {
+            background-color: #9100ff;
+        }
         .ipanel {
             border-radius: 5px;
             background-color: #5f6576;
-            min-width: 300px;
+            min-width: 350px;
             display: table;
             padding: 5px 10px;
         }
@@ -285,8 +302,17 @@ const char MAIN_page[] PROGMEM = R"=====(
             var password = document.querySelector('#password').value;
             var local_device_name = document.querySelector('#local-device-name').value;
             var remote_device_name = document.querySelector('#remote-device-name').value;
-            var ip_mqtt_service = document.querySelector('#ip-mqtt-service').value;
-            var port_mqtt_service = document.querySelector('#port-mqtt-service').value;
+            var mqtt_service_host = document.querySelector('#mqtt-service-host').value;
+            var mqtt_service_port = document.querySelector('#mqtt-service-port').value;
+            var mqtt_service_user = document.querySelector('#mqtt-service-user').value;
+            var mqtt_service_pass = document.querySelector('#mqtt-service-pass').value;
+            var light = 0;
+            if (document.querySelector('#light').checked) {
+                light = 1;
+            }
+            var color_red = document.querySelector('#color-red').value;
+            var color_green = document.querySelector('#color-green').value;
+            var color_blue = document.querySelector('#color-blue').value;
             
             if (ssid != "" && password != "") {
                 document.querySelector('#restart').style.display = "inline-block";
@@ -303,22 +329,38 @@ const char MAIN_page[] PROGMEM = R"=====(
                                 '&password=' + password +
                                 '&local_device_name=' + local_device_name +
                                 '&remote_device_name=' + remote_device_name +
-                                '&ip_mqtt_service=' + ip_mqtt_service +
-                                '&port_mqtt_service=' + port_mqtt_service, '/saveData');
+                                '&mqtt_service_host=' + mqtt_service_host +
+                                '&mqtt_service_port=' + mqtt_service_port +
+                                '&mqtt_service_user=' + mqtt_service_user +
+                                '&mqtt_service_pass=' + mqtt_service_pass +
+                                '&light=' + light +
+                                '&color_red=' + color_red +
+                                '&color_green=' + color_green +
+                                '&color_blue=' + color_blue,
+                                '/saveData');
             }
         }
         function LoadData(first_load) {
             var req = GetXmlHttp();
             req.onreadystatechange = function() {  
                 if (req.readyState == 4) { 
-                    if(req.status == 200) {
+                    if (req.status == 200) {
                         var data = req.responseText;
                         if (data != 'none') {
                             var split_data = data.split(' ');
                             for (var i = 0; i < split_data.length; i++)
                             {
                                 path_data = split_data[i].split(':');
-                                document.querySelector('#' + path_data[0]).value = path_data[1];
+                                // TODO: FIX ME PLEASE!
+                                if (path_data[0] == 'light') {
+                                    if (path_data[1] == '0') {
+                                        document.querySelector('#light').checked = false;
+                                    } else {
+                                        document.querySelector('#light').checked = true;
+                                    }
+                                } else {
+                                    document.querySelector('#' + path_data[0]).value = path_data[1];
+                                }
                             }
                         }
                         console.log('Response: ' + req.responseText);
@@ -346,19 +388,24 @@ const char MAIN_page[] PROGMEM = R"=====(
         
         <div class="ipanel tittle-panel">LampStation</div>
         
-        <div class="ipanel header-panel">condition</div>
+        <div class="ipanel header-panel">State</div>
         <div class="ipanel body-panel">
-            <div class="checkbox-container"><div class="checkbox-text">Power</div><input class="checkbox-action" id="power" type="checkbox"></div>
-            <div class="range-container"><div class="range-text">Brightness</div><input class="range-action" id="bright" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>
-            <div class="range-container"><div class="range-text">Color</div><input class="range-action" id="color" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>
+            <div class="checkbox-container"><div class="checkbox-text">Light:</div><input class="checkbox-action" id="light" type="checkbox"></div>
+            <!--<div class="range-container"><div class="range-text">Brightness:</div><input class="range-action" id="bright" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>-->
+            <div class="range-container"><div class="range-text">Red:</div><input class="range-action" id="color-green" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>
+            <div class="range-container"><div class="range-text">Green:</div><input class="range-action" id="color-red" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>
+            <div class="range-container"><div class="range-text">Blue:</div><input class="range-action" id="color-blue" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>
+            <div class="range-container"><div class="range-text">Pair online:</div><input class="range-action" disabled id="pair-status" type="text"></div>
+            <div class="range-container"><div class="range-text">MQTT ok:</div><input class="range-action" disabled id="mqtt-status" type="text"></div>
         </div>
         
         <div class="ipanel header-panel">Functions</div>
         <div class="ipanel body-panel">
             <div class="icontainer ibutton" onclick="SendSimpleRequest('/restart')">Restart</div>
+            <div class="icontainer ibutton danger" onclick="if (confirm('Are you sure you want to reset to factory defaults?')) { SendSimpleRequest('/reset'); }">Reset</div>
         </div>
         
-        <div class="ipanel separator-panel">Setting</div>
+        <div class="ipanel separator-panel">Settings</div>
         
         <div class="ipanel separator-panel" id="restart" style="display: none; margin: 0 0 20px 0;">Restart device, if you change wifi data</div>
         
@@ -370,10 +417,12 @@ const char MAIN_page[] PROGMEM = R"=====(
         
         <div class="ipanel header-panel">MQTT</div>
         <div class="ipanel body-panel">
-            <div class="text-container"><input class="text-field" id="local-device-name" placeholder="Name current device..." type="text"></div>
-            <div class="text-container"><input class="text-field" id="remote-device-name" placeholder="Name remote device..." type="text"></div>
-            <div class="text-container"><input class="text-field" id="ip-mqtt-service" placeholder="IP MQTT server..." type="text"></div>
-            <div class="text-container"><input class="text-field" id="port-mqtt-service" placeholder="Port MQTT server..." type="text"></div>
+            <div class="text-container"><input class="text-field" id="local-device-name" placeholder="Name of this device" type="text"></div>
+            <div class="text-container"><input class="text-field" id="remote-device-name" placeholder="Name of remote device" type="text"></div>
+            <div class="text-container"><input class="text-field" id="mqtt-service-host" placeholder="MQTT server host" type="text"></div>
+            <div class="text-container"><input class="text-field" id="mqtt-service-port" placeholder="MQTT server port" type="text"></div>
+            <div class="text-container"><input class="text-field" id="mqtt-service-user" placeholder="MQTT username" type="text"></div>
+            <div class="text-container"><input class="text-field" id="mqtt-service-pass" placeholder="MQTT password" type="password"></div>
         </div>
         
         <div class="icontainer ibutton-yes" onclick="SaveData()">Save</div>

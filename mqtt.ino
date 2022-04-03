@@ -14,10 +14,12 @@ void connectMQTT() {
   id += String(random(0xffffff), HEX);
   Serial.println(id); 
   // подписываемся на своё имя
-  if (mqtt.connect(id.c_str(), "mak", "098d16f4-9e77-11ec-b03e-2fd6cfc389c1")) mqtt.subscribe(data.local_device_name);
+  if (mqtt.connect(id.c_str(), data.mqtt_service_user, data.mqtt_service_pass)) {
+    mqtt.subscribe(data.local_device_name);
+  }
   delay(1000);
   if (mqtt.connected()) {
-    Serial.println("Подключение к серверу MQTT успешно!"); 
+    Serial.println("Connected to MQTT server!"); 
   }
 }
 
@@ -44,7 +46,8 @@ int getFromIndex(char* str, int idx, char div = ',') {
 void callback(char* topic, byte* payload, uint16_t len) {
   payload[len] = '\0';        // закрываем строку
   char* str = (char*)payload; // для удобства
-  Serial.println("Получили сообщение: " + String(str)); 
+  Serial.println("Получили сообщение: " + String(str));
+  
   // не наш пакет, выходим
   if (strncmp(str, MQTT_HEADER, strlen(MQTT_HEADER))) return;
 
@@ -84,7 +87,6 @@ void sendPacket(bool forcibly) {
     Serial.println("Отправка сообщения (регулярная): " + s); 
   }
   
-
   // отправляем
   mqtt.publish(data.remote_device_name, s.c_str());
   

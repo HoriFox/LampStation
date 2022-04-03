@@ -6,13 +6,13 @@
 
 struct LampData {
   char ssid[32] = "";
-  char  password[32] = "";
-  //char ssid[32] = "xxxxxx";
-  //char  password[32] = "xxxxxx";
-  char  local_device_name[20] = "AG_lamp_1";
-  char  remote_device_name[20] = "AG_lamp_2";
-  char ip_mqtt_service[32] = "public.i";
-  uint16_t port_mqtt_service = 1883;
+  char password[32] = "";
+  char local_device_name[20] = "LS_lamp_1";
+  char remote_device_name[20] = "LS_lamp_2";
+  char mqtt_service_host[32] = "argobay.ml";
+  uint16_t mqtt_service_port = 1883;
+  char mqtt_service_user[32] = "";
+  char mqtt_service_pass[64] = "";
 };
 
 LampData data;
