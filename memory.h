@@ -7,8 +7,8 @@
 struct LampData {
   char ssid[32] = "";
   char password[32] = "";
-  char local_device_name[20] = "LS_lamp_1";
-  char remote_device_name[20] = "LS_lamp_2";
+  char local_device_name[20] = "AG_lamp_1";
+  char remote_device_name[20] = "AG_lamp_2";
   char mqtt_service_host[32] = "argobay.ml";
   uint16_t mqtt_service_port = 1883;
   char mqtt_service_user[32] = "";
