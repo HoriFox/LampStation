@@ -530,11 +530,24 @@ const char MAIN_page[] PROGMEM = R"=====(
             }
         }
         function setColor(obj = null, color = null) {
+            var root = document.documentElement;
             if (color != null) {
-                var root = document.documentElement;
                 var color_start = parseInt(getComputedStyle(root).getPropertyValue('--color-start'));
                 var new_color = Math.min(parseInt(obj.value) * (255 - color_start) / 255 + color_start, 255)
                 root.style.setProperty('--color-' + color, new_color);
+            } else {
+                var red_input = document.querySelector('#color-red');
+                var green_input = document.querySelector('#color-green');
+                var blue_input = document.querySelector('#color-blue');
+                var new_color_red = parseInt(red_input.value);
+                var new_color_green = parseInt(green_input.value);
+                var new_color_blue = parseInt(blue_input.value);
+                root.style.setProperty('--color-red', new_color_red);
+                root.style.setProperty('--color-green', new_color_green);
+                root.style.setProperty('--color-blue', new_color_blue);
+                red_input.nextElementSibling.innerHTML = new_color_red;
+                green_input.nextElementSibling.innerHTML = new_color_green;
+                blue_input.nextElementSibling.innerHTML = new_color_blue;
             }
             var title = document.querySelector('#title-panel-color');
             title.style.background = "linear-gradient(to right, rgba(var(--color-red), var(--color-green), var(--color-blue), var(--color-alpha)), rgba(0, 0, 0, 0) var(--color-limit)) no-repeat";
