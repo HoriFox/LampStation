@@ -19,6 +19,12 @@ struct Timer {
     state = true;
   }
 
+  // force set elapsed state
+  void expire() {
+    tmr = 0;
+    state = false;
+  }
+
   // время с рестарта вышло
   bool elapsed() {
     return (!state || check());

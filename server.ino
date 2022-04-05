@@ -18,8 +18,7 @@ void serverRoot() {
 void preData() {
   strncpy(data.ssid, server.arg("ssid").c_str(), sizeof(data.ssid));
   strncpy(data.password, server.arg("password").c_str(), sizeof(data.password));
-  Serial.println(String(data.ssid) + " " + 
-                 String(data.password));
+  Serial.println(String(data.ssid) + " " + String(data.password));
 
   updateData();
   Serial.println("Данные ssid и пароля записаны в память");
@@ -31,13 +30,13 @@ void loadData() {
   String response = "none";
   if (server.arg("firstFlag") == "true") {
   response = "ssid:" + String(data.ssid)
-          + " password:" + String(data.password)
+          //+ " password:" + String(data.password)
           + " local-device-name:" + String(data.local_device_name)
           + " remote-device-name:" + String(data.remote_device_name)
           + " mqtt-service-host:" + String(data.mqtt_service_host)
           + " mqtt-service-port:" + String(data.mqtt_service_port)
           + " mqtt-service-user:" + String(data.mqtt_service_user)
-          + " mqtt-service-pass:" + String(data.mqtt_service_pass)
+          //+ " mqtt-service-pass:" + String(data.mqtt_service_pass)
           + " light:" + String(color_pro.power)
           + " color-red:" + String(color_pro.targetRed)
           + " color-green:" + String(color_pro.targetGreen)
@@ -51,23 +50,26 @@ void loadData() {
 
 void saveData() {
   bool mqtt_reconnect = false;
-
-  if(strcmp(server.arg("local_device_name").c_str(), data.local_device_name) != 0 || 
-     strcmp(server.arg("mqtt_service_host").c_str(), data.mqtt_service_host) != 0 ||
-     strcmp(server.arg("mqtt_service_user").c_str(), data.mqtt_service_user) != 0 ||
-     strcmp(server.arg("mqtt_service_pass").c_str(), data.mqtt_service_pass) != 0 ||
-     server.arg("mqtt_service_port").toInt() != data.mqtt_service_port) {
-     mqtt_reconnect = true;
+  if (strcmp(server.arg("local_device_name").c_str(), data.local_device_name) != 0 || 
+      strcmp(server.arg("mqtt_service_host").c_str(), data.mqtt_service_host) != 0 ||
+      strcmp(server.arg("mqtt_service_user").c_str(), data.mqtt_service_user) != 0 ||
+      strcmp(server.arg("mqtt_service_pass").c_str(), data.mqtt_service_pass) != 0 ||
+      server.arg("mqtt_service_port").toInt() != data.mqtt_service_port) {
+    mqtt_reconnect = true;
   }
   
   strncpy(data.ssid, server.arg("ssid").c_str(), sizeof(data.ssid));
-  strncpy(data.password, server.arg("password").c_str(), sizeof(data.password));
+  if (server.arg("password").length() != 0) {
+    strncpy(data.password, server.arg("password").c_str(), sizeof(data.password));
+  }
   strncpy(data.local_device_name, server.arg("local_device_name").c_str(), sizeof(data.local_device_name));
   strncpy(data.remote_device_name, server.arg("remote_device_name").c_str(), sizeof(data.remote_device_name));
   strncpy(data.mqtt_service_host, server.arg("mqtt_service_host").c_str(), sizeof(data.mqtt_service_host));
   data.mqtt_service_port = server.arg("mqtt_service_port").toInt();
   strncpy(data.mqtt_service_user, server.arg("mqtt_service_user").c_str(), sizeof(data.mqtt_service_user));
-  strncpy(data.mqtt_service_pass, server.arg("mqtt_service_pass").c_str(), sizeof(data.mqtt_service_pass));
+  if (server.arg("mqtt_service_pass").length() != 0) {
+     strncpy(data.mqtt_service_pass, server.arg("mqtt_service_pass").c_str(), sizeof(data.mqtt_service_pass)); 
+  }
 
   updateData();
   
@@ -79,7 +81,7 @@ void saveData() {
   color_pro.checkoutPower(false, server.arg("light").toInt());
   sendPacket(true);
 
-  onlineTmr.restart();
+  onlineTmr.expire();
 
   Serial.println("Список данных записан в память");
   Serial.println(String(data.ssid) + " " + 

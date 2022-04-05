@@ -9,9 +9,7 @@
 WiFiClient espClient;
 PubSubClient mqtt(espClient);
 bool heilFlag = false;
-
 bool apWifiFlag = false;
-
 int maxCountTry = 20;
 
 Timer onlineTmr(ONLINE_TIMEOUT, false);  // таймаут онлайна
@@ -61,6 +59,7 @@ void setup(void) {
       WiFi.softAP(("WebLamp_" + String(WiFi.macAddress())).c_str(), AP_PASSWORD);
       Serial.println("Switch to AP mode");
     }
+    
   } else {
     Serial.println("Dont exist wifi data");
     apWifiFlag = true;
@@ -78,22 +77,21 @@ void loop(void) {
   if (hbTmr.period() && !apWifiFlag) sendPacket(false);
 
   int button = checkButton();
-  if (button == 1) {
-    color_pro.setAlpha(1);
-    color_pro.checkoutPower();
-    sendPacket(true);
+  switch (button) {
+    case 1:
+      color_pro.setAlpha(1);
+      color_pro.checkoutPower();
+      break;
+    case 2:
+      color_pro.setRandomColor();
+      break;
+    case 3:
+      color_pro.heil();
+      heilFlag = true;
+      break;
   }
-  if (button == 2) {
-    color_pro.setRandomColor();
-    sendPacket(true);
-  }
-  if (button == 3) {
-    color_pro.heil();
-    heilFlag = true;
-    sendPacket(true);
-  }
-  if (button == -1) {}
   if (button != 0) {
+    sendPacket(true);
     Serial.println("Кнопка: " + String(button));
   }
 

@@ -11,6 +11,9 @@ const char LOGIN_page[] PROGMEM = R"=====(
     
     <!-- Block style -->
     <style>
+        :root {
+            --main-width: 350px;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -22,7 +25,7 @@ const char LOGIN_page[] PROGMEM = R"=====(
             left: 0;
             right: 0;
             margin: 10px auto;
-            width: 350px;
+            width: var(--main-width);
         }
         .icontainer {
             display: table;
@@ -39,7 +42,7 @@ const char LOGIN_page[] PROGMEM = R"=====(
         }
         .ibutton-yes {
             background-color: #67d06d;
-            width: 350px;
+            width: var(--main-width);
             padding: 10px 10px;
             font-weight: bold;
             margin-bottom: 20px;
@@ -50,7 +53,7 @@ const char LOGIN_page[] PROGMEM = R"=====(
         .ipanel {
             border-radius: 5px;
             background-color: #5f6576;
-            min-width: 350px;
+            min-width: var(--main-width);
             display: table;
             padding: 8px 10px 5px 10px;
         }
@@ -85,9 +88,10 @@ const char LOGIN_page[] PROGMEM = R"=====(
             width: 100%;
         }
         .eye {
-            position: absolute;
-            margin-left: -34px;
-            margin-top: 9px;
+            position: relative;
+            display: inline-block;
+            margin-left: calc(var(--main-width) - 28px);
+            margin-top: -28px;
             width: 15px;
             height: 15px;
             border: solid 2px #5f6576;
@@ -276,8 +280,6 @@ const char MAIN_page[] PROGMEM = R"=====(
             min-width: calc(var(--main-width) + 20px);
             margin-bottom: 20px;
             background-color: white;
-            /*background: linear-gradient(to right, #9100ff, #f2c0ff);*/
-            /*overflow: hidden;*/
         }
         #title-panel-color {
             margin: 0;
@@ -348,7 +350,6 @@ const char MAIN_page[] PROGMEM = R"=====(
         }
         .checkbox-action:checked::after {
             transform: translateX(calc(100% + 5px));
-            /*background-color: #fff;*/
         }
         .checkbox-action:checked {
             background-color: #67d06d;
@@ -366,9 +367,10 @@ const char MAIN_page[] PROGMEM = R"=====(
             width: 100%;
         }
         .eye {
-            position: absolute;
-            margin-left: -34px;
-            margin-top: 9px;
+            position: relative;
+            display: inline-block;
+            margin-left: calc(var(--main-width) - 28px);
+            margin-top: -28px;
             width: 15px;
             height: 15px;
             border: solid 2px #5f6576;
@@ -447,12 +449,12 @@ const char MAIN_page[] PROGMEM = R"=====(
             var color_green = document.querySelector('#color-green').value;
             var color_blue = document.querySelector('#color-blue').value;
             
-            if (ssid != "" && password != "") {
+            if (ssid != "") {
                 document.querySelector('#restart').style.display = "inline-block";
             
                 var req = GetXmlHttp();
-                req.onreadystatechange = function() {  
-                    if (req.readyState == 4) { 
+                req.onreadystatechange = function() {
+                    if (req.readyState == 4) {
                         if(req.status == 200) {
                             console.log('Response: ' + req.responseText);
                         } else { return; }
