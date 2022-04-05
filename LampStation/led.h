@@ -21,15 +21,15 @@ void rainbow(uint8_t wait);
 class ColorPro {
   public:
     bool power = false;
-    int red = 0;
-    int targetRed = 0;
-    int green = 0;
-    int targetGreen = 0;
-    int blue = 0;
-    int targetBlue = 0;
+    uint16_t red = 0;
+    uint16_t targetRed = 0;
+    uint16_t green = 0;
+    uint16_t targetGreen = 0;
+    uint16_t blue = 0;
+    uint16_t targetBlue = 0;
     float alpha = 0;
 
-    ColorPro(int red_, int green_, int blue_, float alpha_ = 0) {
+    ColorPro(uint16_t red_, uint16_t green_, uint16_t blue_, float alpha_ = 0) {
       targetRed = red_;
       targetGreen = green_;
       targetBlue = blue_;
@@ -53,24 +53,24 @@ class ColorPro {
     }
 
     uint32_t currentColor() {
-      return strip.Color(int(red * alpha), int(green * alpha), int(blue * alpha));
+      return strip.Color(uint16_t(red * alpha), uint16_t(green * alpha), uint16_t(blue * alpha));
     }
     
-    void setColor(int red_, int green_, int blue_) {
+    void setColor(uint16_t red_, uint16_t green_, uint16_t blue_) {
       targetRed = red_;
       targetGreen = green_;
       targetBlue = blue_;
     }
 
     void setRandomColor() {
-      targetRed = random(256);
-      targetGreen = random(256);
-      targetBlue = random(256);
+      targetRed = uint16_t(random(256));
+      targetGreen = uint16_t(random(256));
+      targetBlue = uint16_t(random(256));
     }
 
     void setAlpha(float alpha_) {
       if (alpha_ < 0) alpha_ = 0;
-//      power = (alpha_ == 0) ? false : true;
+      //power = (alpha_ == 0) ? false : true;
       alpha = alpha_;
       updateColor();
     }

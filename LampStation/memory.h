@@ -13,6 +13,9 @@ struct LampData {
   uint16_t mqtt_service_port = 1883;
   char mqtt_service_user[32] = "";
   char mqtt_service_pass[64] = "";
+  uint16_t color_red = 100;
+  uint16_t color_green = 100;
+  uint16_t color_blue = 100;
 };
 
 LampData data;

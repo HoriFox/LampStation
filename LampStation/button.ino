@@ -1,12 +1,12 @@
 #include "button.h"
 
-int clickTime = 450;            // max ms between clicks for a double click event
-int holdTime = 2000;        // ms hold period: how long to wait for press+hold event
+int clickTime = 450;  // max ms between clicks for a double click event
+int holdTime = 2000;  // ms hold period: how long to wait for press+hold event
 
 int countClick = 0;
 long lastUpTime = -1;
 long lastDownTime = -1;
-boolean buttonVal = LOW;
+bool buttonVal = LOW;
 bool buttonValLast = LOW;
 bool resetButtonUp = true;
 bool resetButtonDown = true;

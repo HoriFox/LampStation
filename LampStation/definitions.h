@@ -13,7 +13,6 @@
 
 #define PACKET_SEND_DELAY 10000 // ms
 #define ONLINE_TIMEOUT    22000 // ms
-
-#include "version.h"
+#define MAX_COUNT_TRY     20    // WiFi connection attempts count
 
 #endif // DEFINITIONS_H

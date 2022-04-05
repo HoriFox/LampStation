@@ -70,17 +70,15 @@ void saveData() {
   if (server.arg("mqtt_service_pass").length() != 0) {
      strncpy(data.mqtt_service_pass, server.arg("mqtt_service_pass").c_str(), sizeof(data.mqtt_service_pass)); 
   }
-
+  data.color_red = server.arg("color_red").toInt();
+  data.color_green = server.arg("color_green").toInt();
+  data.color_blue = server.arg("color_blue").toInt();
+  
   updateData();
   
-  color_pro.setColor(
-    server.arg("color_red").toInt(),
-    server.arg("color_green").toInt(),
-    server.arg("color_blue").toInt()
-  );
-  color_pro.checkoutPower(false, server.arg("light").toInt());
+  color_pro.setColor(data.color_red, data.color_green, data.color_blue);
+  color_pro.checkoutPower(false, server.arg("light").toInt());  
   sendPacket(true);
-
   onlineTmr.expire();
 
   Serial.println("Список данных записан в память");
@@ -91,7 +89,8 @@ void saveData() {
                  String(data.mqtt_service_host) + " " + 
                  String(data.mqtt_service_user) + " " + 
                  String(data.mqtt_service_pass) + " " + 
-                 data.mqtt_service_port);
+                 data.mqtt_service_port + " " +
+                 data.color_red + " " + data.color_green + " " + data.color_blue);
 
   server.send(200, "text/plain", "saveData");
 
