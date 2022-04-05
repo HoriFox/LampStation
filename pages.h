@@ -52,7 +52,7 @@ const char LOGIN_page[] PROGMEM = R"=====(
             background-color: #5f6576;
             min-width: 350px;
             display: table;
-            padding: 5px 10px;
+            padding: 8px 10px 5px 10px;
         }
         .tittle-panel {
             font-weight: bold;
@@ -83,6 +83,40 @@ const char LOGIN_page[] PROGMEM = R"=====(
             margin: 5px 5px 5px 0px;
             padding: 5px;
             width: 100%;
+        }
+        .eye {
+            position: absolute;
+            margin-left: -34px;
+            margin-top: 9px;
+            width: 15px;
+            height: 15px;
+            border: solid 2px #5f6576;
+            border-radius: 75% 15%;
+            transform: rotate(45deg);
+        }
+        .eye::before {
+            content: '';
+            display: block;
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border: solid 2px #5f6576;
+            border-radius: 50%;
+            left: 3px;
+            top: 3px;
+        }
+        .eye:hover, .eye:hover i, .eye:hover::before {
+            border-color: #1a1d26;
+        }
+        .eye i {
+            content: '';
+            display: none;
+            position: absolute;
+            width: 23px;
+            height: 0;
+            border: solid 1px #5f6576;
+            left: -5px;
+            top: 6.5px;
         }
     </style>
     <!-- Block style -->
@@ -128,6 +162,17 @@ const char LOGIN_page[] PROGMEM = R"=====(
                 SendRequest(req, 'ssid=' + ssid + '&password=' + password, '/preData');
             }
         }
+        function showPassword(obj) {
+            var x = obj.previousSibling;
+            var y = obj.firstElementChild;
+            if (x.type === "password") {
+                x.type = "text";
+                y.style.display = "block";
+            } else {
+                x.type = "password";
+                y.style.display = "none";
+            }
+        }
     </script>
     <!-- Block script -->
     
@@ -139,8 +184,8 @@ const char LOGIN_page[] PROGMEM = R"=====(
         
         <div class="ipanel header-panel">WiFi setup</div>
         <div class="ipanel body-panel">
-            <div class="text-container"><input class="text-field" id="ssid" placeholder="SSID..." type="text"></div>
-            <div class="text-container"><input class="text-field" id="password" placeholder="Password..." type="password"></div>
+            <div class="text-container"><input class="text-field" id="ssid" placeholder="SSID" type="text"></div>
+            <div class="text-container"><input class="text-field" id="password" placeholder="Password" type="password"><i class="eye" onclick="showPassword(this)"><i></i></i></div>
         </div>
         
         <div class="icontainer ibutton-yes" onclick="SaveData()">Save</div>
@@ -152,13 +197,20 @@ const char LOGIN_page[] PROGMEM = R"=====(
 
 const char MAIN_page[] PROGMEM = R"=====(
 <html>
-    <head>
+<head>
     <title>LampStation</title>
-    </head>
+</head>
 <body>
-    
-    <!-- Block style -->
     <style>
+        :root {
+            --main-width: 350px;
+            --color-limit: 130%;
+            --color-start: 20;
+            --color-alpha: 0.9;
+            --color-red: var(--color-start);
+            --color-green: var(--color-start);
+            --color-blue: var(--color-start);
+        }
         body {
             margin: 0;
             padding: 0;
@@ -170,7 +222,7 @@ const char MAIN_page[] PROGMEM = R"=====(
             left: 0;
             right: 0;
             margin: 20px auto;
-            width: 350px;
+            width: var(--main-width);
         }
         .icontainer {
             display: table;
@@ -204,7 +256,7 @@ const char MAIN_page[] PROGMEM = R"=====(
         }
         .ibutton-yes {
             background-color: #67d06d;
-            width: 350px;
+            width: var(--main-width);
             padding: 10px 10px;
             font-weight: bold;
             margin-bottom: 20px;
@@ -215,16 +267,26 @@ const char MAIN_page[] PROGMEM = R"=====(
         .ipanel {
             border-radius: 5px;
             background-color: #5f6576;
-            min-width: 350px;
+            min-width: var(--main-width);
             display: table;
-            padding: 5px 10px;
+            padding: 8px 10px 5px 10px;
         }
         .tittle-panel {
+            padding: 0;
+            min-width: calc(var(--main-width) + 20px);
+            margin-bottom: 20px;
+            background-color: white;
+            /*background: linear-gradient(to right, #9100ff, #f2c0ff);*/
+            /*overflow: hidden;*/
+        }
+        #title-panel-color {
+            margin: 0;
+            border-radius: 4px;
             font-weight: bold;
             font-size: 25px;
-            margin-bottom: 20px;
             padding: 20px 10px;
-            background: linear-gradient(to right, #9100ff, #f2c0ff);
+            text-shadow: 0px 0px 3px black;
+            background: linear-gradient(to right, rgba(var(--color-red), var(--color-green), var(--color-blue), var(--color-alpha)), rgba(0, 0, 0, 0) var(--color-limit));
         }
         .separator-panel {
             font-weight: bold;
@@ -253,6 +315,44 @@ const char MAIN_page[] PROGMEM = R"=====(
         .range-action, .checkbox-action, .range-value {
             vertical-align: middle;
         }
+        .checkbox-action {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 55px;
+            height: 29.5px;
+            background: #d06d67;
+            border: 2px solid #fff;
+            border-radius: 100px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.85, 0.32, 1.2);
+            box-shadow: inset 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+        }
+        .checkbox-action::after {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            margin: 3px;
+            width: 16px;
+            height: 16px;
+            background-color: #676774;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            transform: translateX(0);
+            transition: all 0.3s cubic-bezier(0.2, 0.85, 0.32, 1.2);
+            box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+        }
+        .checkbox-action:hover::after {
+            background-color: #484851;
+        }
+        .checkbox-action:checked::after {
+            transform: translateX(calc(100% + 5px));
+            /*background-color: #fff;*/
+        }
+        .checkbox-action:checked {
+            background-color: #67d06d;
+        }
         .range-value {
             display: inline-block;
             vertical-align: middle;
@@ -265,9 +365,42 @@ const char MAIN_page[] PROGMEM = R"=====(
             padding: 5px;
             width: 100%;
         }
+        .eye {
+            position: absolute;
+            margin-left: -34px;
+            margin-top: 9px;
+            width: 15px;
+            height: 15px;
+            border: solid 2px #5f6576;
+            border-radius: 75% 15%;
+            transform: rotate(45deg);
+        }
+        .eye::before {
+            content: '';
+            display: block;
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border: solid 2px #5f6576;
+            border-radius: 50%;
+            left: 3px;
+            top: 3px;
+        }
+        .eye:hover, .eye:hover i, .eye:hover::before {
+            border-color: #1a1d26;
+        }
+        .eye i {
+            content: '';
+            display: none;
+            position: absolute;
+            width: 23px;
+            height: 0;
+            border: solid 1px #5f6576;
+            left: -5px;
+            top: 6.5px;
+        }
     </style>
     <!-- Block style -->
-    
     <!-- Block script -->
     <script>
         function GetXmlHttp() {
@@ -364,6 +497,7 @@ const char MAIN_page[] PROGMEM = R"=====(
                             }
                         }
                         console.log('Response: ' + req.responseText);
+                        setColor();
                     } else { return; }
                 }
             }
@@ -381,20 +515,42 @@ const char MAIN_page[] PROGMEM = R"=====(
             xhr.open('GET', requestValue, false);
             xhr.send();
         }
+
+        function showPassword(obj) {
+            var x = obj.previousSibling;
+            var y = obj.firstElementChild;
+            if (x.type === "password") {
+                x.type = "text";
+                y.style.display = "block";
+            } else {
+                x.type = "password";
+                y.style.display = "none";
+            }
+        }
+        function setColor(obj = null, color = null) {
+            if (color != null) {
+                var root = document.documentElement;
+                var color_start = parseInt(getComputedStyle(root).getPropertyValue('--color-start'));
+                var new_color = Math.min(parseInt(obj.value) * (255 - color_start) / 255 + color_start, 255)
+                root.style.setProperty('--color-' + color, new_color);
+            }
+            var title = document.querySelector('#title-panel-color');
+            title.style.background = "linear-gradient(to right, rgba(var(--color-red), var(--color-green), var(--color-blue), var(--color-alpha)), rgba(0, 0, 0, 0) var(--color-limit)) no-repeat";
+        }
     </script>
     <!-- Block script -->
     
     <div class="main-container">
         
-        <div class="ipanel tittle-panel">LampStation</div>
+        <div class="ipanel tittle-panel"><div id="title-panel-color">LampStation</div></div>
         
         <div class="ipanel header-panel">State</div>
         <div class="ipanel body-panel">
             <div class="checkbox-container"><div class="checkbox-text">Light:</div><input class="checkbox-action" id="light" type="checkbox"></div>
             <!--<div class="range-container"><div class="range-text">Brightness:</div><input class="range-action" id="bright" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>-->
-            <div class="range-container"><div class="range-text">Red:</div><input class="range-action" id="color-green" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>
-            <div class="range-container"><div class="range-text">Green:</div><input class="range-action" id="color-red" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>
-            <div class="range-container"><div class="range-text">Blue:</div><input class="range-action" id="color-blue" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value"><div class="range-value">0</div></div>
+            <div class="range-container"><div class="range-text">Red:</div><input class="range-action" id="color-green" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value" onchange="setColor(this, 'red');"><div class="range-value">0</div></div>
+            <div class="range-container"><div class="range-text">Green:</div><input class="range-action" id="color-red" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value" onchange="setColor(this, 'green');"><div class="range-value">0</div></div>
+            <div class="range-container"><div class="range-text">Blue:</div><input class="range-action" id="color-blue" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value" onchange="setColor(this, 'blue');"><div class="range-value">0</div></div>
             <div class="range-container"><div class="range-text">Pair online:</div><input class="range-action" disabled id="pair-status" type="text"></div>
             <div class="range-container"><div class="range-text">MQTT ok:</div><input class="range-action" disabled id="mqtt-status" type="text"></div>
         </div>
@@ -411,8 +567,8 @@ const char MAIN_page[] PROGMEM = R"=====(
         
         <div class="ipanel header-panel">WiFi</div>
         <div class="ipanel body-panel">
-            <div class="text-container"><input class="text-field" id="ssid" placeholder="SSID..." type="text"></div>
-            <div class="text-container"><input class="text-field" id="password" placeholder="Password..." type="password"></div>
+            <div class="text-container"><input class="text-field" id="ssid" placeholder="SSID" type="text"></div>
+            <div class="text-container"><input class="text-field" id="password" placeholder="Password (empty = no change)" type="password"><i class="eye" onclick="showPassword(this)"><i></i></i></div>
         </div>
         
         <div class="ipanel header-panel">MQTT</div>
@@ -422,7 +578,7 @@ const char MAIN_page[] PROGMEM = R"=====(
             <div class="text-container"><input class="text-field" id="mqtt-service-host" placeholder="MQTT server host" type="text"></div>
             <div class="text-container"><input class="text-field" id="mqtt-service-port" placeholder="MQTT server port" type="text"></div>
             <div class="text-container"><input class="text-field" id="mqtt-service-user" placeholder="MQTT username" type="text"></div>
-            <div class="text-container"><input class="text-field" id="mqtt-service-pass" placeholder="MQTT password" type="password"></div>
+            <div class="text-container"><input class="text-field" id="mqtt-service-pass" placeholder="MQTT password (empty = no change)" type="password"><i class="eye" onclick="showPassword(this)"><i></i></i></div>
         </div>
         
         <div class="icontainer ibutton-yes" onclick="SaveData()">Save</div>

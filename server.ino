@@ -79,6 +79,8 @@ void saveData() {
   color_pro.checkoutPower(false, server.arg("light").toInt());
   sendPacket(true);
 
+  onlineTmr.restart();
+
   Serial.println("Список данных записан в память");
   Serial.println(String(data.ssid) + " " + 
                  String(data.password) + " " + 
