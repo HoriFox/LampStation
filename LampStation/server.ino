@@ -49,6 +49,12 @@ void loadData() {
 }
 
 void saveData() {
+  bool wifi_reconnect = false;
+  if (strcmp(server.arg("ssid").c_str(), data.ssid) != 0 || 
+      server.arg("password").length() >= MIN_WIFI_PASS_LEN && strcmp(server.arg("password").c_str(), data.password) != 0) {
+    wifi_reconnect = true;
+  }
+  
   bool mqtt_reconnect = false;
   if (strcmp(server.arg("local_device_name").c_str(), data.local_device_name) != 0 || 
       strcmp(server.arg("mqtt_service_host").c_str(), data.mqtt_service_host) != 0 ||
@@ -57,9 +63,9 @@ void saveData() {
       server.arg("mqtt_service_port").toInt() != data.mqtt_service_port) {
     mqtt_reconnect = true;
   }
-  
+
   strncpy(data.ssid, server.arg("ssid").c_str(), sizeof(data.ssid));
-  if (server.arg("password").length() != 0) {
+  if (server.arg("password").length() >= MIN_WIFI_PASS_LEN) {
     strncpy(data.password, server.arg("password").c_str(), sizeof(data.password));
   }
   strncpy(data.local_device_name, server.arg("local_device_name").c_str(), sizeof(data.local_device_name));
@@ -67,7 +73,7 @@ void saveData() {
   strncpy(data.mqtt_service_host, server.arg("mqtt_service_host").c_str(), sizeof(data.mqtt_service_host));
   data.mqtt_service_port = server.arg("mqtt_service_port").toInt();
   strncpy(data.mqtt_service_user, server.arg("mqtt_service_user").c_str(), sizeof(data.mqtt_service_user));
-  if (server.arg("mqtt_service_pass").length() != 0) {
+  if (server.arg("mqtt_service_pass").length() >= MIN_MQTT_PASS_LEN) {
      strncpy(data.mqtt_service_pass, server.arg("mqtt_service_pass").c_str(), sizeof(data.mqtt_service_pass)); 
   }
   data.color_red = server.arg("color_red").toInt();
@@ -93,6 +99,11 @@ void saveData() {
                  data.color_red + " " + data.color_green + " " + data.color_blue);
 
   server.send(200, "text/plain", "saveData");
+
+  if (wifi_reconnect) {
+    Serial.println("Изменены данные WiFi, перезагружаюсь");
+    ESP.restart();
+  }
 
   if (mqtt_reconnect) {
     Serial.println("Изменены данные MQTT, переподключаюсь");

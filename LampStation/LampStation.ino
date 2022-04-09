@@ -6,6 +6,10 @@
 #include "memory.h"
 #include "led.h"
 
+#include "ESP8266mDNS.h"
+#include "WiFiUdp.h"
+#include "ArduinoOTA.h"
+
 WiFiClient espClient;
 PubSubClient mqtt(espClient);
 
@@ -47,6 +51,8 @@ void setup(void) {
     WiFi.mode(WIFI_STA);
     WiFi.begin(data.ssid, data.password);
 
+    color_pro.blinkNow(255, 255, 255, 600); // Белый
+
     int countTry = 0;
     while (WiFi.status() != WL_CONNECTED) {
       countTry += 1;
@@ -54,9 +60,32 @@ void setup(void) {
       Serial.print(".");
       if (countTry >= MAX_COUNT_TRY) {
         Serial.println("Attempts limit reached");
+        color_pro.blinkNow(255, 0, 0, 600); // Красный
         break;
       }
     }
+
+    ArduinoOTA.onStart([]() {
+      Serial.println("Start");
+    });
+    ArduinoOTA.onEnd([]() {
+      Serial.println("\nEnd");
+    });
+    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    });
+    ArduinoOTA.onError([](ota_error_t error) {
+      Serial.printf("Error[%u]: ", error);
+      color_pro.blinkNow(255, 0, 0, 600, 2); // Красный, 2 моргания
+      if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+      else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+      else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+      else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+      else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    });
+    ArduinoOTA.setHostname(("WebLampESP_" + String(WiFi.macAddress())).c_str());
+    ArduinoOTA.setPassword("5331");
+    ArduinoOTA.begin();
 
     if (WiFi.status() == WL_CONNECTED) {
       Serial.print("Connected to: ");
@@ -73,12 +102,18 @@ void setup(void) {
     Serial.println("Dont exist wifi data");
     setupAP();
   }
-
-  color_pro.setColor(data.color_red, data.color_green, data.color_blue);
-  Serial.println("Setup color_pro");
   
   setupServer();
   Serial.println("HTTP-server started");
+
+  if (apWifiFlag) { 
+    color_pro.setAlpha(1); 
+  } else {
+    color_pro.blinkNow(0, 255, 0, 600); // Зелёный
+  }
+
+  color_pro.setColor(data.color_red, data.color_green, data.color_blue);
+  Serial.println("Setup color_pro");
 }
 
 void loop(void) {
@@ -107,7 +142,12 @@ void loop(void) {
     Serial.println("Button: " + String(button));
   }
 
+  if (color_pro.isReachTarget() && apWifiFlag) {
+    color_pro.setColor(0, 0, abs(color_pro.blue-255));
+  }
+
   color_pro.updateLed();
   if (!apWifiFlag) mqttUpdate();
   handleRequests();
+  ArduinoOTA.handle();
 }

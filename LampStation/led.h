@@ -29,12 +29,7 @@ class ColorPro {
     uint16_t targetBlue = 0;
     float alpha = 0;
 
-    ColorPro(uint16_t red_, uint16_t green_, uint16_t blue_, float alpha_ = 0) {
-      targetRed = red_;
-      targetGreen = green_;
-      targetBlue = blue_;
-      alpha = alpha_;
-    }
+    ColorPro() {}
 
     void updateLed() {
       if ( red < targetRed ) red += 1;
@@ -52,6 +47,10 @@ class ColorPro {
       delay(l_wait_ms);
     }
 
+    bool isReachTarget() {
+      return (red == targetRed) && (green == targetGreen) && (blue == targetBlue);
+    }
+
     uint32_t currentColor() {
       return strip.Color(uint16_t(red * alpha), uint16_t(green * alpha), uint16_t(blue * alpha));
     }
@@ -62,12 +61,23 @@ class ColorPro {
       targetBlue = blue_;
     }
 
-    void setRandomColor() {
-      targetRed = uint16_t(random(256));
-      targetGreen = uint16_t(random(256));
-      targetBlue = uint16_t(random(256));
+    void blinkNow(uint16_t red_, uint16_t green_, uint16_t blue_, int delayWait, int countRepeat = 1) {
+      for (int i = 0; i < countRepeat; i++) {
+        red = red_;
+        green = green_;
+        blue = blue_;
+        targetRed = red_;
+        targetGreen = green_;
+        targetBlue = blue_;
+        setAlpha(1);
+        updateColor();
+        delay(delayWait);
+        setAlpha(0);
+        updateColor();
+        delay(delayWait*2);
+      }
     }
-
+    
     void setAlpha(float alpha_) {
       if (alpha_ < 0) alpha_ = 0;
       //power = (alpha_ == 0) ? false : true;
@@ -126,6 +136,6 @@ class ColorPro {
     }
 };
 
-ColorPro color_pro = ColorPro(100, 100, 100);
+ColorPro color_pro = ColorPro();
 
 #endif // LED_H

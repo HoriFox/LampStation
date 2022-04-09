@@ -486,15 +486,15 @@ const char MAIN_page[] PROGMEM = R"=====(
                             for (var i = 0; i < split_data.length; i++)
                             {
                                 path_data = split_data[i].split(':');
-                                // TODO: FIX ME PLEASE!
-                                if (path_data[0] == 'light') {
-                                    if (path_data[1] == '0') {
-                                        document.querySelector('#light').checked = false;
-                                    } else {
-                                        document.querySelector('#light').checked = true;
-                                    }
+                                var obj = document.querySelector('#' + path_data[0]);
+                                if (obj.type === "checkbox") {
+                                    obj.checked = (path_data[1] == '0') ? false : true;
+                                } else if (path_data[0] == "pair-status" || path_data[0] == "mqtt-status") {
+                                    obj.style.background = (path_data[1] == '0') ? "#d06d67" : "#67d06d"
+                                    console.log(path_data[0]);
+                                    console.log(path_data[1]);
                                 } else {
-                                    document.querySelector('#' + path_data[0]).value = path_data[1];
+                                    obj.value = path_data[1];
                                 }
                             }
                         }
@@ -566,8 +566,12 @@ const char MAIN_page[] PROGMEM = R"=====(
             <div class="range-container"><div class="range-text">Red:</div><input class="range-action" id="color-red" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value" onchange="setColor(this, 'red');"><div class="range-value">0</div></div>
             <div class="range-container"><div class="range-text">Green:</div><input class="range-action" id="color-green" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value" onchange="setColor(this, 'green');"><div class="range-value">0</div></div>
             <div class="range-container"><div class="range-text">Blue:</div><input class="range-action" id="color-blue" type="range" value="0" min=0 max="255" oninput="this.nextElementSibling.innerHTML = this.value" onchange="setColor(this, 'blue');"><div class="range-value">0</div></div>
-            <div class="range-container"><div class="range-text">Pair online:</div><input class="range-action" disabled id="pair-status" type="text"></div>
-            <div class="range-container"><div class="range-text">MQTT ok:</div><input class="range-action" disabled id="mqtt-status" type="text"></div>
+            <div class="range-container"><div class="range-text">Pair online:</div>
+                <div id="pair-status" style="height: 25;width: 25;display: inline-block;vertical-align: middle;border-radius: 20px;background: #d06d67;border: 2px solid #fff;"></div>
+            </div>
+            <div class="range-container"><div class="range-text">MQTT ok:</div>
+                <div id="mqtt-status" style="height: 25;width: 25;display: inline-block;vertical-align: middle;border-radius: 20px;background: #d06d67;border: 2px solid #fff;"></div>
+            </div>
         </div>
         
         <div class="ipanel header-panel">Functions</div>
